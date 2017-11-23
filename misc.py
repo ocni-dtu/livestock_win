@@ -11,7 +11,6 @@ import xml.etree.ElementTree as ET
 import xmltodict
 
 # Livestock imports
-import lib.csv as ls_csv
 
 # -------------------------------------------------------------------------------------------------------------------- #
 # Livestock Windows Misc Functions

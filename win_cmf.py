@@ -12,7 +12,7 @@ import xmltodict
 import numpy as np
 
 # Livestock imports
-import lib.csv as ls_csv
+#import lib.csv as ls_csv
 
 # -------------------------------------------------------------------------------------------------------------------- #
 # Livestock Windows Misc Functions
@@ -80,7 +80,8 @@ def cell_results(looking_for, result_file, folder):
 
     # Write files
     file_path = folder + '/' + looking_for + '.csv'
-    ls_csv.write_csv(file_path, results_to_save, dimension=1)
+    csv_file = open(file_path, 'w')
+    csv_file.write(','.join(results_to_save))
 
 
 def layer_results(lookup_list, result_file, folder):
