@@ -81,7 +81,9 @@ def cell_results(looking_for, result_file, folder):
     # Write files
     file_path = folder + '/' + looking_for + '.csv'
     csv_file = open(file_path, 'w')
-    csv_file.write(','.join(results_to_save))
+    for result_ in results_to_save:
+        csv_file.write(','.join(str(r) for r in result_)+'\n')
+    csv_file.close()
 
 
 def layer_results(lookup_list, result_file, folder):
