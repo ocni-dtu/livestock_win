@@ -28,8 +28,6 @@ def cmf_results(path):
             result_path = path + '/' + f
         elif f.startswith('result_lookup'):
             lookup_path = path + '/' + f
-        else:
-            pass
 
     # Read look up file
     file_obj = open(lookup_path, 'r')
@@ -41,8 +39,8 @@ def cmf_results(path):
             cell_results(lookup_dict[lookup_key], result_path, path)
         elif lookup_key.startswith('layer'):
             layer_results(lookup_dict[lookup_key], result_path, path)
-        else:
-            pass
+
+    return True
 
 
 def cell_results(looking_for, result_file, folder):
@@ -63,20 +61,16 @@ def cell_results(looking_for, result_file, folder):
 
         else:
             for result in results['result'][cell]:
-                if result.startswith('layer'):
-                    pass
-
-                else:
-                    if result == looking_for:
-                        if result == 'heat_flux':
-                            # Covert heat flux from MJ/(m2*day) to W/m2h
-                            flux_MJ = np.array(eval(results['result'][cell][str(result)]))
-                            flux_Wm2 = flux_MJ/0.0864
-                            results_to_save.append(list(flux_Wm2))
-                        else:
-                            results_to_save.append(results['result'][cell][str(result)][1:-1])
+                if result == looking_for:
+                    if result == 'heat_flux':
+                        # Covert heat flux from MJ/(m2*day) to W/m2h
+                        flux_MJ = np.array(eval(results['result'][cell][str(result)]))
+                        flux_Wm2 = flux_MJ/0.0864
+                        results_to_save.append(list(flux_Wm2))
                     else:
-                        pass
+                        results_to_save.append(eval(results['result'][cell][str(result)]))
+
+
 
     # Write files
     file_path = folder + '/' + looking_for + '.csv'
@@ -85,12 +79,33 @@ def cell_results(looking_for, result_file, folder):
         csv_file.write(','.join(str(r) for r in result_)+'\n')
     csv_file.close()
 
+    return True
 
-def layer_results(lookup_list, result_file, folder):
+
+def layer_results(looking_for, result_file, folder):
     """Processes layer results"""
 
+    # Initialize
     result_tree = ET.tostring(ET.parse(result_file).getroot())
     results = xmltodict.parse(result_tree)
+    results_to_save = []
 
-    for cell in results['results'].keys():
-        pass
+    # find results
+    for cell in results['result'].keys():
+
+        for cell_result in results['result'][cell].keys():
+            if cell_result.startswith('layer'):
+                for layer_result in results['result'][cell][cell_result]:
+                    if layer_result == looking_for:
+                        results_to_save.append(eval(results['result'][cell][cell_result][layer_result]))
+
+        results_to_save.append([cell])
+
+    # Write files
+    file_path = folder + '/' + looking_for + '.csv'
+    csv_file = open(file_path, 'w')
+    for result_ in results_to_save:
+        csv_file.write(','.join(str(r) for r in result_)+'\n')
+    csv_file.close()
+
+    return True
