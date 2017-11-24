@@ -10,6 +10,7 @@ import os
 import xml.etree.ElementTree as ET
 import xmltodict
 import numpy as np
+import ast
 
 # Livestock imports
 #import lib.csv as ls_csv
@@ -64,11 +65,15 @@ def cell_results(looking_for, result_file, folder):
                 if result == looking_for:
                     if result == 'heat_flux':
                         # Covert heat flux from MJ/(m2*day) to W/m2h
-                        flux_MJ = np.array(eval(results['result'][cell][str(result)]))
+                        flux_MJ = np.array(eval(results['result'][cell][result]))
                         flux_Wm2 = flux_MJ/0.0864
                         results_to_save.append(list(flux_Wm2))
+
+                    elif result == 'surface_water_flux':
+                        results_to_save.append(convert_cmf_points(results['result'][cell][result]))
+
                     else:
-                        results_to_save.append(eval(results['result'][cell][str(result)]))
+                        results_to_save.append(eval(results['result'][cell][result]))
 
 
 
@@ -97,7 +102,14 @@ def layer_results(looking_for, result_file, folder):
             if cell_result.startswith('layer'):
                 for layer_result in results['result'][cell][cell_result]:
                     if layer_result == looking_for:
-                        results_to_save.append(eval(results['result'][cell][cell_result][layer_result]))
+                        if layer_result == 'volumetric_flux':
+                            results_to_save.append(convert_cmf_points(results['result']
+                                                                      [cell]
+                                                                      [cell_result]
+                                                                      [layer_result]))
+
+                        else:
+                            results_to_save.append(eval(results['result'][cell][cell_result][layer_result]))
 
         results_to_save.append([cell])
 
@@ -109,3 +121,19 @@ def layer_results(looking_for, result_file, folder):
     csv_file.close()
 
     return True
+
+
+def convert_cmf_points(points):
+    # convert to list
+    point_list = points[1:-1]
+    point_tuples = []
+
+    for tup in point_list.split(' '):
+        try:
+            tup1 = ast.literal_eval(tup[9:-1])
+        except SyntaxError:
+            tup1 = ast.literal_eval(tup[9:])
+        point_tuples.append(' '.join(str(e) for e in tup1))
+
+    return point_tuples
+
